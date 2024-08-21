@@ -12,6 +12,8 @@ def scroll_and_collect_elements(driver, class_name):
     elements = set()
     last_height = driver.execute_script("return document.body.scrollHeight")
 
+    i = 0
+
     while True:
         # Scroll down by a small amount.
         driver.execute_script("window.scrollBy(0, 1000);")
@@ -26,6 +28,11 @@ def scroll_and_collect_elements(driver, class_name):
         if new_height == last_height:
             break
         last_height = new_height
+
+        i = i + 1
+
+        if i > 5:
+            break
 
     return list(elements)
 
