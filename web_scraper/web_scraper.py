@@ -20,7 +20,7 @@ def scroll_down(driver):
         # Scroll down to the bottom.
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-        time.sleep(3)
+        time.sleep(3) #Wait for page to load
 
         # Calculate new scroll height and compare with last scroll height.
         new_height = driver.execute_script("return document.body.scrollHeight")
