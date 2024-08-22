@@ -2,39 +2,46 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-def scroll_and_collect_elements(driver, class_name):
-    """Scrolls the page and collects elements with the specified class name."""
-    elements = set()
+def scroll_down(driver):
+    """A method for scrolling the page and collecting producer names."""
+
+    names = []  # Use a set to avoid duplicates
+    itemTargetCount = 50
+
+    # Get scroll height.
     last_height = driver.execute_script("return document.body.scrollHeight")
 
-    i = 0
+    while itemTargetCount > len(names):
+        # Scroll down to the bottom.
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-    while True:
-        # Scroll down by a small amount.
-        driver.execute_script("window.scrollBy(0, 1000);")
-        time.sleep(2)  # Wait for new content to load.
-
-        # Collect elements.
-        new_elements = driver.find_elements(By.CLASS_NAME, class_name)
-        elements.update(new_elements)
+        time.sleep(3)
 
         # Calculate new scroll height and compare with last scroll height.
         new_height = driver.execute_script("return document.body.scrollHeight")
+
         if new_height == last_height:
             break
+
         last_height = new_height
 
-        i = i + 1
+        # Find producer elements by CSS selector
+        producer_elements = driver.find_elements(By.CSS_SELECTOR, '#app-body > mp-root > div > div > ng-component > mp-search-v3 > div > div > section > mp-search-results > mp-list-card-member > mp-list-card-template > div > mp-card-figure-member')
 
-        if i > 5:
-            break
+        for producer_element in producer_elements:
+            try:
+                producer_name = producer_element.find_element(By.CLASS_NAME, 'card-figure').text.split('\n', 1)[0].strip()
+                if producer_name not in names:
+                    names.append(producer_name)
+            except NoSuchElementException:
+                print("Could not find the link in the element.")
 
-    return list(elements)
+    return list(names)
 
 # For keeping the browser open after the script runs
 options = webdriver.ChromeOptions()
@@ -63,17 +70,12 @@ WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.CLASS_NAME, 'card-figure'))
 )
 
-# Scroll and collect elements
-producer_elements = scroll_and_collect_elements(driver, 'card-figure')
-names = [element.text for element in producer_elements]
+# Scroll down and collect names
+producer_names = scroll_down(driver)
 
-# Print the names of the producers
-for name in names:
-    try:
-        producer_name = name.split('\n', 1)[0]
-        print(producer_name)
-    except NoSuchElementException:
-        print("Could not find the name in the element.")
+# Print all collected names
+for name in producer_names:
+    print(name)
 
 # Quit the driver (optional)
 driver.quit()
