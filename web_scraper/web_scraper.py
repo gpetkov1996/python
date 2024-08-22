@@ -10,7 +10,7 @@ import time
 def scroll_down(driver):
     """A method for scrolling the page and collecting producer names."""
 
-    names = []  # Use a set to avoid duplicates
+    names = set()  # Use a set to avoid duplicates
     itemTargetCount = 50
 
     # Get scroll height.
@@ -37,7 +37,7 @@ def scroll_down(driver):
             try:
                 producer_name = producer_element.find_element(By.CLASS_NAME, 'card-figure').text.split('\n', 1)[0].strip()
                 if producer_name not in names:
-                    names.append(producer_name)
+                    names.add(producer_name)
             except NoSuchElementException:
                 print("Could not find the link in the element.")
 
