@@ -11,6 +11,7 @@ def scroll_down(driver):
     """A method for scrolling the page and collecting producer names."""
 
     names = set()  # Use a set to avoid duplicates
+    producer_pages = []
     itemTargetCount = 50
 
     # Get scroll height.
@@ -38,10 +39,18 @@ def scroll_down(driver):
                 producer_name = producer_element.find_element(By.CLASS_NAME, 'card-figure').text.split('\n', 1)[0].strip()
                 if producer_name not in names:
                     names.add(producer_name)
+
+                    producer_page = producer_element.find_element(By.XPATH, f"//a[@class='name ng-star-inserted' and text()=' {producer_name} ']")
+
+                    link = producer_page.get_attribute('href')
+                    # print(link)
+
+                    producer_pages.append(link)
+
             except NoSuchElementException:
                 print("Could not find the link in the element.")
 
-    return list(names)
+    return list(producer_pages)
 
 # For keeping the browser open after the script runs
 options = webdriver.ChromeOptions()
@@ -72,7 +81,6 @@ WebDriverWait(driver, 10).until(
 
 # Scroll down and collect names
 producer_names = scroll_down(driver)
-
 # Print all collected names
 for name in producer_names:
     print(name)
