@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import re
 
 def scroll_down(driver):
     """A method for scrolling the page and collecting producer names."""
@@ -94,8 +95,27 @@ for producer_page in producer_pages:
     try:
         producer_name = driver.find_element(By.XPATH, "(//h1[text()])[3]").text
         producer_followers = driver.find_element(By.XPATH, "(//span[@class='value ng-star-inserted'])[1]").text
-        producer_email = driver.find_element(By.XPATH, "//a[starts-with(@href, 'mailto:')]").text
+        producer_email = None
 
+        try:
+            producer_email = driver.find_element(By.XPATH, "//a[starts-with(@href, 'mailto:')]").text
+        except NoSuchElementException as exception_one:
+            try:
+                view_more = driver.find_element(By.XPATH, "//a[contains(@href, '/about')]")
+
+                driver.get(view_more)
+
+                time.sleep(5)
+                
+# Check about me section for email
+                about_me = driver.find_element(By.XPATH, "//div[@class='about-me-info vb-margin-b-2xl']").text
+                email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+                emails = re.findall(email_pattern, about_me)
+
+                if emails:
+                    producer_email = emails[0]
+            except NoSuchElementException as exception_three:
+                print(f"Element not found: {exception_three}") 
         number = convert_to_number(producer_followers)
         integer_to_compare = 100000
 
@@ -104,8 +124,8 @@ for producer_page in producer_pages:
             print(number)
             print(producer_email)
             print()
-    except NoSuchElementException as e:
-        print(f"Element not found: {e}")
+    except NoSuchElementException as exception_two:
+        print(f"Element not found: {exception_two}")
         
 # Quit the driver (optional)
 driver.quit()
