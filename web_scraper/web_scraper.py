@@ -12,7 +12,7 @@ def scroll_down(driver):
 
     names = set()  # Use a set to avoid duplicates
     producer_pages = []
-    itemTargetCount = 50
+    itemTargetCount = 20
 
     # Get scroll height.
     last_height = driver.execute_script("return document.body.scrollHeight")
@@ -43,7 +43,6 @@ def scroll_down(driver):
                     producer_page = producer_element.find_element(By.XPATH, f"//a[@class='name ng-star-inserted' and text()=' {producer_name} ']")
 
                     link = producer_page.get_attribute('href')
-                    # print(link)
 
                     producer_pages.append(link)
 
@@ -51,6 +50,11 @@ def scroll_down(driver):
                 print("Could not find the link in the element.")
 
     return list(producer_pages)
+
+def convert_to_number(value):
+    if 'k' in value:
+        return int(float(value.replace('k', '')) * 1000)
+    return int(value)
 
 # For keeping the browser open after the script runs
 options = webdriver.ChromeOptions()
@@ -80,10 +84,28 @@ WebDriverWait(driver, 10).until(
 )
 
 # Scroll down and collect names
-producer_names = scroll_down(driver)
+producer_pages = scroll_down(driver)
 # Print all collected names
-for name in producer_names:
-    print(name)
+for producer_page in producer_pages:
+    driver.get(producer_page)
 
+    time.sleep(5)
+
+    try:
+        producer_name = driver.find_element(By.XPATH, "(//h1[text()])[3]").text
+        producer_followers = driver.find_element(By.XPATH, "(//span[@class='value ng-star-inserted'])[1]").text
+        producer_email = driver.find_element(By.XPATH, "//a[starts-with(@href, 'mailto:')]").text
+
+        number = convert_to_number(producer_followers)
+        integer_to_compare = 100000
+
+        if number <= integer_to_compare:
+            print(producer_name)
+            print(number)
+            print(producer_email)
+            print()
+    except NoSuchElementException as e:
+        print(f"Element not found: {e}")
+        
 # Quit the driver (optional)
 driver.quit()
