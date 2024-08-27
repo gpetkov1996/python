@@ -106,12 +106,11 @@ for producer_page in producer_pages:
             try:
                 view_more = driver.find_element(By.XPATH, "//a[contains(@href, '/about')]")
 
-                driver.get(view_more)
+                view_more.click()
 
+                time.sleep(5)
 # Check about me section for email
-                about_me = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, "//div[@class='about-me-info vb-margin-b-2xl']"))
-                ).text
+                about_me = driver.find_element(By.XPATH, "//div[@class='about-me-info vb-margin-b-2xl']").text
                 email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
                 emails = re.findall(email_pattern, about_me)
 
